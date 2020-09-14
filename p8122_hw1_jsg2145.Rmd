@@ -1,0 +1,122 @@
+---
+title: "p8122_hw1_jsg2145"
+author: "Jared Garfinkel"
+date: "9/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(viridis)
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	message = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+
+# Problem 1
+
+Read in data
+
+```{r}
+counterfactuals = tibble(individual = c(1:8), 
+                         y_0 = c(0, 1, 0, 1, 1, 0, 1, 0),
+                         y_1 = c(0, 0, 1, 0, 0, 1, 0, 0))
+
+counterfactuals
+```
+
+## Problem a
+
+The treatment group, y_1, can have no causal effect on health outcome if the treatment difference is 0, a beneficial effect if the treatment difference is 1, or a harmful causal effect if the difference is -1, meaning an individual in a counterfactual was cured in the control group, y_0, but sick in the treatment group.
+
+```{r}
+treffect = counterfactuals %>% 
+  mutate(difference = y_1 - y_0)
+
+treffect
+```
+
+## Problem b
+
+The Average Caussal Effect (ACE) is -1/4 = $$E[y_1] - E[y_0]$$
+
+```{r}
+aceffect = treffect %>% 
+  summarize(sum_y_0 = sum(y_0),
+            sum_y_1 = sum(y_1),
+            ace = sum_y_1/8 - sum_y_0/8)
+
+aceffect
+```
+
+## Problem b
+
+In the treatment assignment, understanding that we cannot know the counterfactual, the association of the treatment with the outcome is -2/4 = $$E[y_1|A = 1] - E[y_0|A = 0]$$
+
+```{r}
+trgroup_0 = treffect %>% 
+  mutate(tr = c(1, 0, 1, 1, 0, 0, 0, 1)) %>% 
+  filter(tr == 0) %>% 
+  summarize(sum_y_0 = sum(y_0))
+
+trgroup_1 = treffect %>% 
+  mutate(tr = c(1, 0, 1, 1, 0, 0, 0, 1)) %>% 
+  filter(tr == 1) %>% 
+  summarize(sum_y_1 = sum(y_1))
+
+trgroups = tibble(trgroup_0, trgroup_1) %>% 
+  mutate(effect = (sum_y_1 - sum_y_0)/4)
+
+trgroups
+```
+
+## Problem d
+
+Create a partition
+
+```{r}
+set.seed(719)
+group_0 = counterfactuals %>% 
+  sample_frac(size = .5, replace = FALSE) %>% 
+  mutate("group" = 0)
+
+group_1 = counterfactuals %>% 
+  anti_join(group_0) %>% 
+  mutate("group" = 1)
+
+groups = bind_rows(group_0, group_1)
+
+groups
+```
+
+Find the observed treatment effects.
+
+The observed effect of treatment is -1/4 = $$E[y_1|A = 1] - E[y_0|A = 0]$$
+
+```{r}
+treatment_0 = groups %>% 
+  filter(group == 0) %>% 
+  summarize(sum_y_0 = sum(y_0))
+
+treatment_1 = groups %>% 
+  filter(group == 1) %>% 
+  summarize(sum_y_1 = sum(y_1))
+
+treatments = tibble(treatment_0, treatment_1) %>% 
+  mutate(effect = (sum_y_1 - sum_y_0)/4)
+
+treatments
+```
+
