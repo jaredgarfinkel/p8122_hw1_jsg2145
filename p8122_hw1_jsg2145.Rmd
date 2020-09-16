@@ -146,25 +146,14 @@ The potential outcomes are blood pressures. They can take values of cured (1) or
 
 ## Problem d
 
-The difference in treatments for the patient was 1 when they took a low dose compared to when they took a high dose. The doctor calculated that the patient was cured on the low dose.
-
-So, the average causal effect (ACE) is 1 = $$E[y_{low}] - E[y_{high}]$$
+The difference in treatments for the patient was 1 when they took a low dose compared to when they took a high dose. 
 
 ```{r}
-patient0 = tibble(ptid = c(0, 0), y_high = c(0, 0), y_low = c(1, 1))
+patient0 = tibble(ptid = c("0", "0"), y_high = c("0", "?"), y_low = c("?", "1"))
 
 patient0
 ```
-
-```{r}
-aceffect = patient0 %>% 
-  summarize(sum_y_high = sum(y_high),
-            sum_y_low = sum(y_low),
-            ace = sum_y_low/2 - sum_y_high/2)
-
-aceffect
-```
-
+$$E[y_{low}|A~=~low]~-~E[y_{high}|A~=~high]~=~1~-~0~=~1$$
 
 ## Problem e
 
