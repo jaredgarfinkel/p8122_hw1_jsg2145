@@ -2,7 +2,7 @@
 title: "p8122_hw1_jsg2145"
 author: "Jared Garfinkel"
 date: "9/14/2020"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -84,7 +84,7 @@ trgroups
 
 ## Problem d
 
-Create a partition
+Create a partition and label the treatment groups.
 
 ```{r}
 set.seed(719)
@@ -103,8 +103,6 @@ groups
 
 Find the observed treatment effects.
 
-The observed effect of treatment is -1/4 = $$E[y_1|A = 1] - E[y_0|A = 0]$$
-
 ```{r}
 treatment_0 = groups %>% 
   filter(group == 0) %>% 
@@ -120,3 +118,72 @@ treatments = tibble(treatment_0, treatment_1) %>%
 treatments
 ```
 
+The observed effect of treatment is `r round(pull(treatments, effect), 2)` = $$E[y_1|A = 1] - E[y_0|A = 0]$$
+
+# Problem 2
+
+During a check-up, a physician finds that his patient's blood pressure levels are too low. He prescribes
+
+medication at a high dose and asks her to be re-tested in a month. At the second test, the patient's blood
+
+pressure levels are now too high, so the physician switches her to a low dose of medication and again asks
+
+her to be re-tested in a month. At the third test, the patient's blood pressure levels are perfect, and so the
+
+doctor decides that she should stay at the low dose indefinitely, with no further testing.
+
+## Problem a
+
+The units are the patient at different times.
+
+## Problem b
+
+The treatment is a dose of medicine. It can be HIGH or LOW.
+
+## Problem c
+
+The potential outcomes are blood pressures. They can take values of cured (1) or not cured (0)
+
+## Problem d
+
+The difference in treatments for the patient was 1 when they took a low dose compared to when they took a high dose. The doctor calculated that the patient was cured on the low dose.
+
+So, the average causal effect (ACE) is 1 = $$E[y_{low}] - E[y_{high}]$$
+
+```{r}
+patient0 = tibble(ptid = c(0, 0), y_high = c(0, 0), y_low = c(1, 1))
+
+patient0
+```
+
+```{r}
+aceffect = patient0 %>% 
+  summarize(sum_y_high = sum(y_high),
+            sum_y_low = sum(y_low),
+            ace = sum_y_low/2 - sum_y_high/2)
+
+aceffect
+```
+
+
+## Problem e
+
+SUTVA is not plausible because the patient at the first visit was used to influence the next dosage. We should assume that the treatment assignment was not based on the outcome of the high dose so that SUTVA is plausible.
+
+## Problem f
+
+SUTVA must be plausible because the counterfactual cannot be observed in real life. The difference between potential outcomes is only possible when the assumptions of SUTVA hold.
+
+## Problem g
+
+The assignment is individualistic because there is only one participant.
+
+It's not probabilistic because the doctor will change the treatment group to put the patient on the treatment that cures them.
+
+The assignment mechanism is not unconfounded because the doctor will assign the patient to a treatment group based on their reaction to the dosage.
+
+This assignment mechanism is known but not controlled.
+
+## Problem h
+
+Assign the patient a lower dose and increase it until the blood pressure is normal in a planned way.
